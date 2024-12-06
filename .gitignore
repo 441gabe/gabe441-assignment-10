@@ -3,3 +3,6 @@
 /coco_images_resized
 coco_images_resized.zip
 image_embeddings.pickle
+/gui/coco_images_resized
+/gui/__pycache__
+/.vscode
