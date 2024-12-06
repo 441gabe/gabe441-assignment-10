@@ -1,0 +1,5 @@
+
+.DS_Store
+/coco_images_resized
+coco_images_resized.zip
+image_embeddings.pickle
