@@ -45,24 +45,49 @@ def perform_search(term, image_path, use_pc):
         print("***IMAGE PATH PROVIDED***")
         # Add logic to handle image search
 
-        if use_pc:
-            # TODO: Implement image search using principal components
+        if use_pc > 0:
             train_images, train_image_names = load_images('./coco_images_resized', max_images=2000)
-            
-            k = use_pc
-            pca = PCA(n_components=k)
+            pca = PCA(n_components=use_pc)
             pca.fit(train_images)
-            
+
+            image = preprocess(Image.open(image_path)).unsqueeze(0)
+            image_embedding = model.encode_image(image).detach().numpy().flatten()
+
+            # Ensure the image embedding has the same shape as the data used to fit the PCA model
+            image_embedding_resized = np.resize(image_embedding, (1, train_images.shape[1]))
+            image_embedding_pca = pca.transform(image_embedding_resized)
+
             transform_images, transform_image_names = load_images('./coco_images_resized', max_images=10000, target_size=(224, 224))
             reduced_embeddings = pca.transform(transform_images)
-            
-            query_embedding = pca.transform(query_embedding.detach().numpy().reshape(1, -1))
-            nearest_indices, distances = nearest_neighbors(query_embedding, reduced_embeddings, top_k=5)
-            
+
+            nearest_indices, distances = nearest_neighbors(image_embedding_pca, reduced_embeddings)
+
             return_image_paths = [os.path.join('./coco_images_resized', transform_image_names[idx]) for idx in nearest_indices]
             similarity_scores = distances.tolist()
-            
+
             return return_image_paths, similarity_scores
+            
+            
+            
+            # # TODO: Implement image search using principal components
+            # train_images, train_image_names = load_images('./coco_images_resized', max_images=2000)
+            
+            # k = use_pc
+            # pca = PCA(n_components=k)
+            # pca.fit(train_images)
+            # image = preprocess(Image.open(image_path)).unsqueeze(0)
+
+            
+            # transform_images, transform_image_names = load_images('./coco_images_resized', max_images=10000, target_size=(224, 224))
+            # reduced_embeddings = pca.transform(transform_images)
+            
+            # query_embedding = F.normalize(model.encode_image(image))
+            # nearest_indices, distances = nearest_neighbors(query_embedding, reduced_embeddings)
+            
+            # return_image_paths = [os.path.join('./coco_images_resized', transform_image_names[idx]) for idx in nearest_indices]
+            # similarity_scores = distances.tolist()
+            
+            # return return_image_paths, similarity_scores
             
         else:
                                 
@@ -132,4 +157,4 @@ def load_images(image_dir, max_images=None, target_size=(224, 224)):
     return np.array(images), image_names
 
 if __name__ == "__main__":
-    perform_search("dog", None, False)
+    perform_search(None, "/Users/gabrielguillermo/Desktop/GitHub_Repositories/gabe441-assignment-10/house.jpg", 10)

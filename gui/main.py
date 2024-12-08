@@ -24,9 +24,12 @@ class SearchApp:
         self.image_label = ttk.Label(root, textvariable=self.image_path)
         self.image_label.pack(pady=5)
 
-        self.use_principal_components = tk.BooleanVar()
-        self.pc_checkbutton = ttk.Checkbutton(root, text="Use Principal Components", variable=self.use_principal_components)
-        self.pc_checkbutton.pack(pady=5)
+        self.pc_label = ttk.Label(root, text="Number of Principal Components:")
+        self.pc_label.pack(pady=5)
+
+        self.num_principal_components = tk.IntVar(value=0)
+        self.pc_spinbox = ttk.Spinbox(root, from_=0, to=100, textvariable=self.num_principal_components)
+        self.pc_spinbox.pack(pady=5)
 
         self.search_button = ttk.Button(root, text="Search", command=self.search)
         self.search_button.pack(pady=5)
@@ -48,24 +51,29 @@ class SearchApp:
     def search(self):
         search_term = self.search_entry.get()
         image_path = self.image_path.get()
-        use_pc = self.use_principal_components.get()
-        result_image_paths, image_scores = perform_search(search_term, image_path, use_pc)
+        num_pc = self.num_principal_components.get()
+        result_image_paths, image_scores = perform_search(search_term, image_path, num_pc)
 
         for widget in self.results_frame.winfo_children():
             widget.destroy()
 
         if result_image_paths:
-            for image_path in zip(result_image_paths, image_scores):
+            for image_path, score in zip(result_image_paths, image_scores):
                 image = Image.open(image_path)
                 image = image.resize((150, 150))
                 photo = ImageTk.PhotoImage(image)
-                label = ttk.Label(self.results_frame, image=photo, text=f"Score: {score:.2f}", compound=tk.BOTTOM)
+                label = None
+                if num_pc > 0:
+                    label = ttk.Label(self.results_frame, image=photo, text=f"Similarity Score: {score}", compound=tk.BOTTOM)
+                else: 
+                    label = ttk.Label(self.results_frame, image=photo, text=f"Similarity Score: {score[0:1]}", compound=tk.BOTTOM)
                 label.image = photo
                 label.pack(side=tk.LEFT, padx=5)
         else:
             self.results_label.config(text="No results found.")
 
 if __name__ == "__main__":
+            
     root = tk.Tk()
     app = SearchApp(root)
     root.mainloop()
