@@ -49,17 +49,17 @@ class SearchApp:
         search_term = self.search_entry.get()
         image_path = self.image_path.get()
         use_pc = self.use_principal_components.get()
-        result_image_paths = perform_search(search_term, image_path, use_pc)
+        result_image_paths, image_scores = perform_search(search_term, image_path, use_pc)
 
         for widget in self.results_frame.winfo_children():
             widget.destroy()
 
         if result_image_paths:
-            for image_path in result_image_paths:
+            for image_path in zip(result_image_paths, image_scores):
                 image = Image.open(image_path)
                 image = image.resize((150, 150))
                 photo = ImageTk.PhotoImage(image)
-                label = ttk.Label(self.results_frame, image=photo)
+                label = ttk.Label(self.results_frame, image=photo, text=f"Score: {score:.2f}", compound=tk.BOTTOM)
                 label.image = photo
                 label.pack(side=tk.LEFT, padx=5)
         else:

@@ -1,0 +1,8 @@
+# requirements.txt
+Pillow
+open_clip_torch
+torch
+numpy
+pandas
+scikit-learn
+tk
